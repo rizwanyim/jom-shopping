@@ -370,13 +370,13 @@ export default function JomShoppingApp() {
             <ShoppingBag className="w-10 h-10 text-white -rotate-3" />
           </div>
           <h1 className={`text-3xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-800'} mb-2 tracking-tight`}>Jom Shopping</h1>
-          <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'} mb-8 font-medium`}>Mudah, Pantas & Bijak.</p>
+          <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'} mb-8 font-medium`}>Kongsi senarai & pantau perbelanjaan runcit bersama.</p>
 
           <form onSubmit={joinRoom} className="space-y-4">
             <div className="relative">
               <input 
                 type="text" 
-                placeholder="Masukkan Kod Bilik" 
+                placeholder="Kod Bilik (Cth: T8F2X)" 
                 className={`w-full text-center text-lg p-3.5 border-2 rounded-2xl focus:outline-none focus:ring-4 uppercase font-bold tracking-widest transition-all ${isDarkMode ? 'bg-slate-900/50 border-slate-600 text-white focus:border-teal-500 focus:ring-teal-500/20' : 'bg-white/50 border-teal-100 text-teal-900 focus:border-teal-500 focus:ring-teal-500/10'}`}
                 value={inputCode}
                 onChange={(e) => setInputCode(e.target.value)}
@@ -411,37 +411,45 @@ export default function JomShoppingApp() {
       <style>{`@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');`}</style>
 
       {/* Header & Kad Bajet */}
-      <div className={`bg-gradient-to-r ${isDarkMode ? 'from-teal-800 to-emerald-900' : 'from-teal-600 to-emerald-500'} text-white pt-6 pb-28 px-4 rounded-b-[2.5rem] shadow-lg relative transition-colors duration-300`}>
+      <div className={`bg-gradient-to-r ${isDarkMode ? 'from-teal-800 to-emerald-900' : 'from-teal-600 to-emerald-500'} text-white pt-5 pb-28 px-4 rounded-b-[2.5rem] shadow-lg relative transition-colors duration-300`}>
         <div className="max-w-3xl mx-auto">
-          <div className="flex justify-between items-center mb-6">
-            <div className="flex items-center gap-2">
-              <div className="bg-white/20 p-1.5 rounded-lg backdrop-blur-sm">
-                <ShoppingBag className="w-5 h-5" />
+          
+          {/* HEADER BARU: Lebih kemas untuk mobile */}
+          <div className="flex justify-between items-start mb-6">
+            {/* Bahagian Kiri (Logo & Nama App & Kod Bilik) */}
+            <div className="flex items-center gap-3">
+              <div className="bg-white/20 p-2 rounded-xl backdrop-blur-sm shadow-inner">
+                <ShoppingBag className="w-5 h-5 md:w-6 md:h-6" />
               </div>
-              <h1 className="text-lg font-bold tracking-tight">Jom Shopping</h1>
+              <div className="flex flex-col">
+                <h1 className="text-base md:text-lg font-bold tracking-tight leading-tight">Jom Shopping</h1>
+                <div className="flex items-center mt-0.5">
+                  <span className="bg-black/20 px-2 py-0.5 rounded text-[9px] font-bold tracking-widest backdrop-blur-sm border border-white/10 uppercase shadow-sm">
+                    KOD: {roomCode}
+                  </span>
+                </div>
+              </div>
             </div>
+
+            {/* Bahagian Kanan (Butang Aksi) */}
             <div className="flex items-center gap-2">
-              {/* Butang Toggle Dark Mode */}
-              <button onClick={() => setIsDarkMode(!isDarkMode)} className="p-1.5 bg-black/10 rounded-full hover:bg-black/20 transition backdrop-blur-sm border border-white/10 text-white">
+              <button onClick={() => setIsDarkMode(!isDarkMode)} className="p-2 bg-black/10 rounded-full hover:bg-black/20 transition backdrop-blur-sm border border-white/10 text-white">
                 {isDarkMode ? <Sun className="w-4 h-4 text-yellow-300" /> : <Moon className="w-4 h-4 text-white" />}
               </button>
-              <span className="bg-black/10 px-3 py-1 rounded-full text-xs font-bold tracking-wider backdrop-blur-sm border border-white/10 uppercase">
-                {roomCode}
-              </span>
-              <button onClick={leaveRoom} className="p-1.5 bg-black/10 rounded-full hover:bg-black/20 transition backdrop-blur-sm border border-white/10">
+              <button onClick={leaveRoom} className="p-2 bg-black/10 rounded-full hover:bg-black/20 transition backdrop-blur-sm border border-white/10">
                 <LogOut className="w-4 h-4 text-white" />
               </button>
             </div>
           </div>
 
-          <div className={`${isDarkMode ? 'bg-slate-800 border-slate-700 text-white shadow-black/40' : 'bg-white border-gray-100 text-gray-800 shadow-teal-900/10'} rounded-3xl p-5 shadow-xl absolute left-4 right-4 max-w-3xl mx-auto top-[76px] border transition-colors duration-300`}>
+          <div className={`${isDarkMode ? 'bg-slate-800 border-slate-700 text-white shadow-black/40' : 'bg-white border-gray-100 text-gray-800 shadow-teal-900/10'} rounded-3xl p-5 shadow-xl absolute left-4 right-4 max-w-3xl mx-auto top-[80px] border transition-colors duration-300`}>
             <div className="flex justify-between items-start mb-3">
               <div>
-                <p className={`text-xs font-medium flex items-center gap-1.5 mb-0.5 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                <p className={`text-xs font-semibold flex items-center gap-1.5 mb-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                   <Wallet className="w-3.5 h-3.5 text-teal-500" /> Jumlah Baki
                 </p>
-                <h2 className={`text-3xl md:text-4xl font-bold tracking-tight ${remaining < 0 ? 'text-rose-500' : (isDarkMode ? 'text-white' : 'text-gray-800')}`}>
-                  <span className={`text-xl mr-1 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>RM</span>
+                <h2 className={`text-3xl md:text-4xl font-bold tracking-tight leading-none ${remaining < 0 ? 'text-rose-500' : (isDarkMode ? 'text-white' : 'text-slate-800')}`}>
+                  <span className={`text-lg md:text-xl mr-1 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>RM</span>
                   {remaining.toFixed(2)}
                 </h2>
               </div>
@@ -565,15 +573,15 @@ export default function JomShoppingApp() {
       {/* Floating Action Buttons */}
       <div className="fixed bottom-4 left-4 right-4 z-40">
         <div className={`max-w-md mx-auto backdrop-blur-xl p-1.5 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border flex gap-1.5 transition-colors ${isDarkMode ? 'bg-slate-800/90 border-slate-700' : 'bg-white/90 border-white'}`}>
-          <button onClick={() => { setShowMasterModal(true); setSearchMasterQuery(''); }} className={`flex-1 bg-transparent font-bold py-2.5 rounded-2xl flex flex-col items-center justify-center gap-1 transition-colors ${isDarkMode ? 'text-slate-300 hover:bg-slate-700' : 'text-gray-600 hover:bg-gray-50'}`}>
+          <button onClick={() => { setShowMasterModal(true); setSearchMasterQuery(''); }} className={`flex-1 bg-transparent font-bold py-2 rounded-2xl flex flex-col items-center justify-center gap-1 transition-colors ${isDarkMode ? 'text-slate-300 hover:bg-slate-700' : 'text-gray-600 hover:bg-gray-50'}`}>
             <History className="w-5 h-5" />
             <span className="text-[10px] tracking-wide">Sejarah</span>
           </button>
-          <button onClick={() => setShowCompareModal(true)} className={`flex-1 bg-transparent font-bold py-2.5 rounded-2xl flex flex-col items-center justify-center gap-1 transition-colors ${isDarkMode ? 'text-blue-400 hover:bg-slate-700' : 'text-blue-600 hover:bg-blue-50'}`}>
+          <button onClick={() => setShowCompareModal(true)} className={`flex-1 bg-transparent font-bold py-2 rounded-2xl flex flex-col items-center justify-center gap-1 transition-colors ${isDarkMode ? 'text-blue-400 hover:bg-slate-700' : 'text-blue-600 hover:bg-blue-50'}`}>
             <Scale className="w-5 h-5" />
             <span className="text-[10px] tracking-wide">Banding</span>
           </button>
-          <button onClick={() => setShowAddModal(true)} className="flex-[1.2] bg-gradient-to-r from-teal-500 to-emerald-500 text-white font-bold py-2.5 rounded-2xl flex flex-col items-center justify-center gap-1 shadow-lg shadow-teal-500/20 hover:-translate-y-0.5 transition-all">
+          <button onClick={() => setShowAddModal(true)} className="flex-[1.2] bg-gradient-to-r from-teal-500 to-emerald-500 text-white font-bold py-2 rounded-2xl flex flex-col items-center justify-center gap-1 shadow-lg shadow-teal-500/20 hover:-translate-y-0.5 transition-all">
             <Plus className="w-5 h-5" />
             <span className="text-[10px] tracking-wide">Tambah</span>
           </button>
@@ -625,13 +633,8 @@ export default function JomShoppingApp() {
               </div>
               <button onClick={() => setShowCompareModal(false)} className={`p-1.5 rounded-full ${isDarkMode ? 'bg-slate-700 text-slate-400 hover:bg-slate-600' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}><X className="w-4 h-4"/></button>
             </div>
-            
-            <p className={`text-[11px] font-medium mb-4 leading-relaxed ${isDarkMode ? 'text-slate-400' : 'text-gray-500'}`}>
-              Kira mana yang lebih berbaloi. Contoh: Sabun 1L harga RM10 vs Sabun 800ml harga RM8.50.
-            </p>
 
             <div className="space-y-4">
-              {/* Barang A */}
               <div className={`p-3 rounded-2xl border ${isDarkMode ? 'bg-slate-900/50 border-slate-700' : 'bg-gray-50 border-gray-200/60'}`}>
                 <p className={`text-xs font-bold mb-2 ${isDarkMode ? 'text-slate-300' : 'text-gray-700'}`}>Barang A</p>
                 <div className="flex gap-2">
@@ -650,10 +653,9 @@ export default function JomShoppingApp() {
 
               <div className="relative h-4 flex items-center justify-center">
                 <div className={`absolute w-full h-px ${isDarkMode ? 'bg-slate-700' : 'bg-gray-200'}`}></div>
-                <span className={`relative px-2 text-[10px] font-bold uppercase tracking-widest ${isDarkMode ? 'bg-slate-800 text-slate-500' : 'bg-white text-gray-400'}`}>Lawan</span>
+                <span className={`relative px-2 text-[10px] font-bold uppercase tracking-widest ${isDarkMode ? 'bg-slate-800 text-slate-500' : 'bg-white text-gray-400'}`}>Berbanding</span>
               </div>
 
-              {/* Barang B */}
               <div className={`p-3 rounded-2xl border ${isDarkMode ? 'bg-slate-900/50 border-slate-700' : 'bg-gray-50 border-gray-200/60'}`}>
                 <p className={`text-xs font-bold mb-2 ${isDarkMode ? 'text-slate-300' : 'text-gray-700'}`}>Barang B</p>
                 <div className="flex gap-2">
