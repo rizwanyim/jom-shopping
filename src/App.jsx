@@ -16,7 +16,7 @@ import {
 } from 'firebase/firestore';
 
 // --- Konfigurasi Firebase ---
-// SILA GANTIKAN BLOK INI DENGAN KUNCI FIREBASE ANDA UNTUK VERCEL
+// SILA GANTIKAN BLOK INI DENGAN KUNCI FIREBASE ANDA
 const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
   apiKey: "AIzaSyD1-v5QTqf3C3aa-xUG8OPhAntDcMrfH2A",
   authDomain: "jom-shopping-af8ee.firebaseapp.com",
@@ -42,10 +42,10 @@ try {
 const appId = typeof __app_id !== 'undefined' ? __app_id : 'jom-shopping-app';
 
 const KATEGORI_LALAI = [
-  'Barang Basah (Ayam/Ikan)',
+  'Barang Basah',
   'Sayur & Buah',
-  'Barangan Kering (Beras/Minyak)',
-  'Keperluan Rumah (Sabun/Tisu)',
+  'Barangan Kering',
+  'Keperluan Rumah',
   'Snek & Minuman',
   'Lain-lain'
 ];
@@ -244,7 +244,6 @@ export default function App() {
   const addFromMaster = async (masterItem) => {
     if (!roomData) return;
     const activeList = roomData.activeList || [];
-    
     if (activeList.find(i => i.name.toLowerCase() === masterItem.name.toLowerCase() && (i.listId || 'default') === currentListId)) return;
 
     const newItem = { 
@@ -253,7 +252,7 @@ export default function App() {
     };
     await updateRoomData({ activeList: [...activeList, newItem] });
     setActiveTab('pending');
-    setShowMasterModal(false); // Tutup senarai lepas klik
+    setShowMasterModal(false);
   };
 
   const startEditMaster = (item) => {
@@ -388,7 +387,6 @@ export default function App() {
 
   const cleanOldHistory = async () => {
     if (!roomData || !roomData.pastSessions) return;
-    
     const sixMonthsAgo = new Date();
     sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
 
@@ -399,6 +397,12 @@ export default function App() {
 
     await updateRoomData({ pastSessions: filteredSessions });
     setConfirmClean(false);
+  };
+
+  const handleNumberInput = (setter) => (e) => {
+    let val = e.target.value.replace(/[^0-9.]/g, '');
+    if ((val.match(/\./g) || []).length > 1) return;
+    setter(val);
   };
 
   // --- Analitik & Pengiraan UI ---
@@ -542,7 +546,7 @@ export default function App() {
     );
   }
 
-  // --- SKRIN UTAMA APLIKASI ---
+  // --- SKRIN UTAMA ---
   return (
     <div className={`min-h-screen ${isDarkMode ? 'bg-slate-900' : 'bg-[#F8FAFC]'} pb-32 transition-colors duration-300`} style={{ fontFamily: "'Poppins', sans-serif" }}>
       <style>{`
@@ -590,7 +594,7 @@ export default function App() {
                   {remaining.toFixed(2)}
                 </h2>
               </div>
-              <button onClick={() => { setBudgetInput(totalBudget.toString()); setShowBudgetModal(true); }} className={`p-2 rounded-full transition-colors ${isDarkMode ? 'bg-slate-700 hover:bg-slate-600 text-teal-400' : 'bg-teal-50 hover:bg-teal-100 text-teal-600'}`}>
+              <button onClick={() => setShowBudgetModal(true)} className={`p-2 rounded-full transition-colors ${isDarkMode ? 'bg-slate-700 hover:bg-slate-600 text-teal-400' : 'bg-teal-50 hover:bg-teal-100 text-teal-600'}`}>
                 <Edit3 className="w-4 h-4" />
               </button>
             </div>
@@ -687,7 +691,7 @@ export default function App() {
               {activeTab === 'pending' ? 'Senarai Kosong' : 'Belum Ada Belian'}
             </h3>
             <p className={`text-sm font-medium ${isDarkMode ? 'text-slate-400' : 'text-gray-400'}`}>
-              {activeTab === 'pending' ? `Mula tambah barang untuk senarai ini.` : 'Barang yang dah dibeli akan muncul di sini.'}
+              {activeTab === 'pending' ? `Mula tambah barang untuk senarai ini.` : 'Barang yang dibeli akan muncul di sini.'}
             </p>
           </div>
         ) : (
@@ -798,7 +802,7 @@ export default function App() {
         </div>
       </div>
 
-      {/* --- SEMUA MODAL INLINE (Lebih stabil untuk input mobile) --- */}
+      {/* --- SEMUA MODAL INLINE (LEBIH SELAMAT & STABIL) --- */}
 
       {/* MODAL: URUS SENARAI */}
       {showManageListModal && (
@@ -842,13 +846,11 @@ export default function App() {
             <form onSubmit={updateBudget}>
               <div className={`flex items-center gap-2 border-2 rounded-2xl p-3 mb-6 transition-all focus-within:ring-4 ${isDarkMode ? 'bg-slate-900 border-slate-700 focus-within:border-teal-500 focus-within:ring-teal-500/20' : 'bg-teal-50/50 border-teal-200 focus-within:border-teal-500 focus-within:ring-teal-500/10'}`}>
                 <span className={`font-bold text-lg ${isDarkMode ? 'text-teal-500' : 'text-teal-700'}`}>RM</span>
-                {/* INI KUNCI UTAMA SUPAYA INPUT LANCAR: type="number" step="any" */}
                 <input 
-                  type="number" 
-                  step="any"
+                  type="text" 
+                  inputMode="decimal"
                   value={budgetInput} 
-                  onChange={(e) => setBudgetInput(e.target.value)} 
-                  onFocus={(e) => e.target.select()} 
+                  onChange={handleNumberInput(setBudgetInput)} 
                   className={`w-full bg-transparent text-2xl font-bold focus:outline-none ${isDarkMode ? 'text-white placeholder-slate-600' : 'text-gray-800 placeholder-gray-300'}`} 
                   placeholder="0.00" 
                 />
@@ -883,7 +885,7 @@ export default function App() {
                   <label className={`text-[10px] text-center font-bold uppercase tracking-widest mb-1 ${isDarkMode ? 'text-slate-500' : 'text-gray-400'}`}>Kuantiti</label>
                   <div className="flex items-center justify-between">
                     <button type="button" onClick={() => setQtyInput(Math.max(1, (parseFloat(qtyInput)||1) - 1))} className={`p-1 rounded-full ${isDarkMode ? 'bg-slate-700 text-white' : 'bg-gray-200 text-gray-700'}`}><Minus className="w-3 h-3"/></button>
-                    <input type="number" step="any" required value={qtyInput} onChange={(e) => setQtyInput(e.target.value)} onFocus={(e) => e.target.select()} className={`w-8 text-center bg-transparent text-lg font-bold focus:outline-none ${isDarkMode ? 'text-white' : 'text-gray-800'}`} />
+                    <input type="text" inputMode="decimal" required value={qtyInput} onChange={handleNumberInput(setQtyInput)} className={`w-8 text-center bg-transparent text-lg font-bold focus:outline-none ${isDarkMode ? 'text-white' : 'text-gray-800'}`} />
                     <button type="button" onClick={() => setQtyInput((parseFloat(qtyInput)||0) + 1)} className={`p-1 rounded-full ${isDarkMode ? 'bg-slate-700 text-white' : 'bg-gray-200 text-gray-700'}`}><Plus className="w-3 h-3"/></button>
                   </div>
                 </div>
@@ -891,7 +893,7 @@ export default function App() {
                   <label className={`text-[10px] text-center font-bold uppercase tracking-widest mb-1 ${isDarkMode ? 'text-teal-500' : 'text-teal-600'}`}>Harga Seunit</label>
                   <div className="flex items-center justify-center gap-1">
                     <span className={`font-bold text-sm ${isDarkMode ? 'text-teal-500' : 'text-teal-700'}`}>RM</span>
-                    <input type="number" step="any" required value={priceInput} onChange={(e) => setPriceInput(e.target.value)} onFocus={(e) => e.target.select()} className={`w-full bg-transparent text-xl text-center font-bold focus:outline-none ${isDarkMode ? 'text-white placeholder-slate-600' : 'text-gray-800 placeholder-gray-300'}`} placeholder="0.00" />
+                    <input type="text" inputMode="decimal" required value={priceInput} onChange={handleNumberInput(setPriceInput)} className={`w-full bg-transparent text-xl text-center font-bold focus:outline-none ${isDarkMode ? 'text-white placeholder-slate-600' : 'text-gray-800 placeholder-gray-300'}`} placeholder="0.00" />
                   </div>
                 </div>
               </div>
@@ -914,7 +916,7 @@ export default function App() {
           <div className={`${isDarkMode ? 'bg-slate-800' : 'bg-white'} rounded-[2rem] w-full max-w-md overflow-hidden animate-in slide-in-from-bottom-8 duration-300 shadow-2xl border ${isDarkMode ? 'border-slate-700' : 'border-transparent'}`}>
             <div className="p-5">
               <div className="flex justify-between items-center mb-5">
-                <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>Tambah Barang Baru</h3>
+                <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>Tambah Barang</h3>
                 <button onClick={() => setShowAddModal(false)} className={`p-1.5 rounded-full ${isDarkMode ? 'bg-slate-700 text-slate-400 hover:bg-slate-600' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}><X className="w-5 h-5"/></button>
               </div>
               <form onSubmit={addItem} className="space-y-4">
@@ -1002,75 +1004,73 @@ export default function App() {
       )}
 
       {/* MODAL: BANDING HARGA */}
-      {showCompareModal && (() => {
-        const bestVal = calculateBestValue();
-        return (
-          <div className={`fixed inset-0 backdrop-blur-sm z-50 flex items-center justify-center p-4 ${isDarkMode ? 'bg-slate-900/80' : 'bg-slate-900/60'}`}>
-            <div className={`${isDarkMode ? 'bg-slate-800' : 'bg-white'} rounded-[2rem] w-full max-w-sm overflow-hidden p-5 animate-in slide-in-from-bottom-8 duration-300 shadow-2xl border ${isDarkMode ? 'border-slate-700' : 'border-transparent'}`}>
-              <div className="flex justify-between items-center mb-4">
-                <div className="flex items-center gap-2">
-                  <div className={`p-1.5 rounded-lg ${isDarkMode ? 'bg-blue-900/50' : 'bg-blue-100'}`}><Scale className={`w-4 h-4 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`} /></div>
-                  <h3 className={`text-base font-bold ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>Banding Harga</h3>
-                </div>
-                <button onClick={() => setShowCompareModal(false)} className={`p-1.5 rounded-full ${isDarkMode ? 'bg-slate-700 text-slate-400 hover:bg-slate-600' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}><X className="w-4 h-4"/></button>
+      {showCompareModal && (
+        <div className={`fixed inset-0 backdrop-blur-sm z-50 flex items-center justify-center p-4 ${isDarkMode ? 'bg-slate-900/80' : 'bg-slate-900/60'}`}>
+          <div className={`${isDarkMode ? 'bg-slate-800' : 'bg-white'} rounded-[2rem] w-full max-w-sm overflow-hidden p-5 animate-in slide-in-from-bottom-8 duration-300 shadow-2xl border ${isDarkMode ? 'border-slate-700' : 'border-transparent'}`}>
+            <div className="flex justify-between items-center mb-4">
+              <div className="flex items-center gap-2">
+                <div className={`p-1.5 rounded-lg ${isDarkMode ? 'bg-blue-900/50' : 'bg-blue-100'}`}><Scale className={`w-4 h-4 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`} /></div>
+                <h3 className={`text-base font-bold ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>Banding Harga</h3>
               </div>
-              <p className={`text-[11px] font-medium mb-4 leading-relaxed ${isDarkMode ? 'text-slate-400' : 'text-gray-500'}`}>Kira mana yang lebih berbaloi. Contoh: Sabun 1L harga RM10 vs Sabun 800ml harga RM8.50.</p>
-              
-              <div className="space-y-4">
-                <div className={`p-3 rounded-2xl border ${isDarkMode ? 'bg-slate-900/50 border-slate-700' : 'bg-gray-50 border-gray-200/60'}`}>
-                  <p className={`text-xs font-bold mb-2 ${isDarkMode ? 'text-slate-300' : 'text-gray-700'}`}>Barang A</p>
-                  <div className="flex gap-2">
-                    <div className="flex-1 relative">
-                      <span className={`absolute left-2.5 top-2.5 text-xs font-bold ${isDarkMode ? 'text-slate-500' : 'text-gray-400'}`}>RM</span>
-                      <input type="number" step="any" value={compA.price} onChange={(e)=>setCompA({...compA, price: e.target.value})} placeholder="Harga" className={`w-full text-sm pl-8 pr-2 py-2 rounded-xl border focus:outline-none font-semibold ${isDarkMode ? 'bg-slate-800 border-slate-600 text-white focus:border-blue-500' : 'bg-white border-gray-200 focus:border-blue-500 text-gray-800'}`} />
-                    </div>
-                    <div className="flex-1">
-                      <input type="number" step="any" value={compA.qty} onChange={(e)=>setCompA({...compA, qty: e.target.value})} placeholder="Kuantiti" className={`w-full text-sm px-3 py-2 rounded-xl border focus:outline-none font-semibold ${isDarkMode ? 'bg-slate-800 border-slate-600 text-white focus:border-blue-500' : 'bg-white border-gray-200 focus:border-blue-500 text-gray-800'}`} />
-                    </div>
-                    <select value={compA.unit} onChange={e=>setCompA({...compA, unit: e.target.value})} className={`w-16 text-xs px-1 py-2 rounded-xl border font-semibold focus:outline-none appearance-none text-center ${isDarkMode ? 'bg-slate-800 border-slate-600 text-white focus:border-blue-500' : 'bg-white border-gray-200 focus:border-blue-500 text-gray-800'}`}>
-                      <option value="g">g</option><option value="kg">kg</option><option value="ml">ml</option><option value="L">L</option><option value="pcs">pcs</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div className="relative h-4 flex items-center justify-center">
-                  <div className={`absolute w-full h-px ${isDarkMode ? 'bg-slate-700' : 'bg-gray-200'}`}></div>
-                  <span className={`relative px-2 text-[10px] font-bold uppercase tracking-widest ${isDarkMode ? 'bg-slate-800 text-slate-500' : 'bg-white text-gray-400'}`}>Lawan</span>
-                </div>
-
-                <div className={`p-3 rounded-2xl border ${isDarkMode ? 'bg-slate-900/50 border-slate-700' : 'bg-gray-50 border-gray-200/60'}`}>
-                  <p className={`text-xs font-bold mb-2 ${isDarkMode ? 'text-slate-300' : 'text-gray-700'}`}>Barang B</p>
-                  <div className="flex gap-2">
-                    <div className="flex-1 relative">
-                      <span className={`absolute left-2.5 top-2.5 text-xs font-bold ${isDarkMode ? 'text-slate-500' : 'text-gray-400'}`}>RM</span>
-                      <input type="number" step="any" value={compB.price} onChange={(e)=>setCompB({...compB, price: e.target.value})} placeholder="Harga" className={`w-full text-sm pl-8 pr-2 py-2 rounded-xl border focus:outline-none font-semibold ${isDarkMode ? 'bg-slate-800 border-slate-600 text-white focus:border-blue-500' : 'bg-white border-gray-200 focus:border-blue-500 text-gray-800'}`} />
-                    </div>
-                    <div className="flex-1">
-                      <input type="number" step="any" value={compB.qty} onChange={(e)=>setCompB({...compB, qty: e.target.value})} placeholder="Kuantiti" className={`w-full text-sm px-3 py-2 rounded-xl border focus:outline-none font-semibold ${isDarkMode ? 'bg-slate-800 border-slate-600 text-white focus:border-blue-500' : 'bg-white border-gray-200 focus:border-blue-500 text-gray-800'}`} />
-                    </div>
-                    <select value={compB.unit} onChange={e=>setCompB({...compB, unit: e.target.value})} className={`w-16 text-xs px-1 py-2 rounded-xl border font-semibold focus:outline-none appearance-none text-center ${isDarkMode ? 'bg-slate-800 border-slate-600 text-white focus:border-blue-500' : 'bg-white border-gray-200 focus:border-blue-500 text-gray-800'}`}>
-                      <option value="g">g</option><option value="kg">kg</option><option value="ml">ml</option><option value="L">L</option><option value="pcs">pcs</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-
-              {bestVal && typeof bestVal === 'object' && (
-                <div className={`mt-4 p-3 rounded-xl border text-center font-bold text-sm animate-in fade-in zoom-in-95 duration-300 ${bestVal.winner === 'A' ? (isDarkMode ? 'bg-emerald-900/30 border-emerald-800 text-emerald-400' : 'bg-emerald-50 border-emerald-200 text-emerald-700') : (isDarkMode ? 'bg-blue-900/30 border-blue-800 text-blue-400' : 'bg-blue-50 border-blue-200 text-blue-700')}`}>
-                  <Sparkles className="w-4 h-4 inline-block mr-1.5 -mt-0.5" />{bestVal.text}
-                </div>
-              )}
-              {bestVal === 'Sama nilai berbaloi.' && (
-                <div className={`mt-4 p-3 rounded-xl border text-center font-bold text-sm animate-in fade-in ${isDarkMode ? 'bg-slate-700 border-slate-600 text-slate-300' : 'bg-gray-100 border-gray-200 text-gray-600'}`}>
-                  Dua-dua sama je nilainya.
-                </div>
-              )}
-
-              <button onClick={() => { setCompA({price:'',qty:'',unit:'g'}); setCompB({price:'',qty:'',unit:'g'}); }} className={`w-full mt-4 py-3 border-2 text-xs font-bold rounded-xl transition-colors ${isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-400 hover:bg-slate-700' : 'bg-white border-gray-100 text-gray-500 hover:bg-gray-50'}`}>Reset Semula</button>
+              <button onClick={() => setShowCompareModal(false)} className={`p-1.5 rounded-full ${isDarkMode ? 'bg-slate-700 text-slate-400 hover:bg-slate-600' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}><X className="w-4 h-4"/></button>
             </div>
+
+            <div className="space-y-4">
+              <div className={`p-3 rounded-2xl border ${isDarkMode ? 'bg-slate-900/50 border-slate-700' : 'bg-gray-50 border-gray-200/60'}`}>
+                <p className={`text-xs font-bold mb-2 ${isDarkMode ? 'text-slate-300' : 'text-gray-700'}`}>Barang A</p>
+                <div className="flex gap-2">
+                  <div className="flex-1 relative">
+                    <span className={`absolute left-2.5 top-2.5 text-xs font-bold ${isDarkMode ? 'text-slate-500' : 'text-gray-400'}`}>RM</span>
+                    <input type="text" inputMode="decimal" value={compA.price} onChange={handleNumberInput((v)=>setCompA({...compA, price: v}))} placeholder="Harga" className={`w-full text-sm pl-8 pr-2 py-2 rounded-xl border focus:outline-none font-semibold ${isDarkMode ? 'bg-slate-800 border-slate-600 text-white focus:border-blue-500' : 'bg-white border-gray-200 focus:border-blue-500 text-gray-800'}`} />
+                  </div>
+                  <div className="flex-1">
+                    <input type="text" inputMode="decimal" value={compA.qty} onChange={handleNumberInput((v)=>setCompA({...compA, qty: v}))} placeholder="Kuantiti" className={`w-full text-sm px-3 py-2 rounded-xl border focus:outline-none font-semibold ${isDarkMode ? 'bg-slate-800 border-slate-600 text-white focus:border-blue-500' : 'bg-white border-gray-200 focus:border-blue-500 text-gray-800'}`} />
+                  </div>
+                  <select value={compA.unit} onChange={e=>setCompA({...compA, unit: e.target.value})} className={`w-16 text-xs px-1 py-2 rounded-xl border font-semibold focus:outline-none appearance-none text-center ${isDarkMode ? 'bg-slate-800 border-slate-600 text-white focus:border-blue-500' : 'bg-white border-gray-200 focus:border-blue-500 text-gray-800'}`}>
+                    <option value="g">g</option><option value="kg">kg</option><option value="ml">ml</option><option value="L">L</option><option value="pcs">pcs</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="relative h-4 flex items-center justify-center">
+                <div className={`absolute w-full h-px ${isDarkMode ? 'bg-slate-700' : 'bg-gray-200'}`}></div>
+                <span className={`relative px-2 text-[10px] font-bold uppercase tracking-widest ${isDarkMode ? 'bg-slate-800 text-slate-500' : 'bg-white text-gray-400'}`}>Lawan</span>
+              </div>
+
+              <div className={`p-3 rounded-2xl border ${isDarkMode ? 'bg-slate-900/50 border-slate-700' : 'bg-gray-50 border-gray-200/60'}`}>
+                <p className={`text-xs font-bold mb-2 ${isDarkMode ? 'text-slate-300' : 'text-gray-700'}`}>Barang B</p>
+                <div className="flex gap-2">
+                  <div className="flex-1 relative">
+                    <span className={`absolute left-2.5 top-2.5 text-xs font-bold ${isDarkMode ? 'text-slate-500' : 'text-gray-400'}`}>RM</span>
+                    <input type="text" inputMode="decimal" value={compB.price} onChange={handleNumberInput((v)=>setCompB({...compB, price: v}))} placeholder="Harga" className={`w-full text-sm pl-8 pr-2 py-2 rounded-xl border focus:outline-none font-semibold ${isDarkMode ? 'bg-slate-800 border-slate-600 text-white focus:border-blue-500' : 'bg-white border-gray-200 focus:border-blue-500 text-gray-800'}`} />
+                  </div>
+                  <div className="flex-1">
+                    <input type="text" inputMode="decimal" value={compB.qty} onChange={handleNumberInput((v)=>setCompB({...compB, qty: v}))} placeholder="Kuantiti" className={`w-full text-sm px-3 py-2 rounded-xl border focus:outline-none font-semibold ${isDarkMode ? 'bg-slate-800 border-slate-600 text-white focus:border-blue-500' : 'bg-white border-gray-200 focus:border-blue-500 text-gray-800'}`} />
+                  </div>
+                  <select value={compB.unit} onChange={e=>setCompB({...compB, unit: e.target.value})} className={`w-16 text-xs px-1 py-2 rounded-xl border font-semibold focus:outline-none appearance-none text-center ${isDarkMode ? 'bg-slate-800 border-slate-600 text-white focus:border-blue-500' : 'bg-white border-gray-200 focus:border-blue-500 text-gray-800'}`}>
+                    <option value="g">g</option><option value="kg">kg</option><option value="ml">ml</option><option value="L">L</option><option value="pcs">pcs</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            {bestValue && typeof bestValue === 'object' && (
+              <div className={`mt-4 p-3 rounded-xl border text-center font-bold text-sm animate-in fade-in zoom-in-95 duration-300 ${bestValue.winner === 'A' ? (isDarkMode ? 'bg-emerald-900/30 border-emerald-800 text-emerald-400' : 'bg-emerald-50 border-emerald-200 text-emerald-700') : (isDarkMode ? 'bg-blue-900/30 border-blue-800 text-blue-400' : 'bg-blue-50 border-blue-200 text-blue-700')}`}>
+                <Sparkles className="w-4 h-4 inline-block mr-1.5 -mt-0.5" />{bestValue.text}
+              </div>
+            )}
+            {bestValue === 'Sama nilai berbaloi.' && (
+              <div className={`mt-4 p-3 rounded-xl border text-center font-bold text-sm animate-in fade-in ${isDarkMode ? 'bg-slate-700 border-slate-600 text-slate-300' : 'bg-gray-100 border-gray-200 text-gray-600'}`}>
+                Dua-dua sama je nilainya.
+              </div>
+            )}
+
+            <button onClick={() => { setCompA({price:'',qty:'',unit:'g'}); setCompB({price:'',qty:'',unit:'g'}); }} className={`w-full mt-4 py-3 border-2 text-xs font-bold rounded-xl transition-colors ${isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-400 hover:bg-slate-700' : 'bg-white border-gray-100 text-gray-500 hover:bg-gray-50'}`}>
+              Reset Semula
+            </button>
           </div>
-        );
-      })()}
+        </div>
+      )}
 
       {/* MODAL: ANALITIK */}
       {showAnalyticsModal && (
@@ -1079,7 +1079,7 @@ export default function App() {
             <div className={`p-5 border-b flex justify-between items-center z-10 ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-gray-100'}`}>
               <div>
                 <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>Analitik</h3>
-                <p className={`text-[11px] font-bold uppercase tracking-wider mt-0.5 ${isDarkMode ? 'text-purple-400' : 'text-purple-600'}`}>Sejarah Arkib Sesi Shopping</p>
+                <p className={`text-[11px] font-bold uppercase tracking-wider mt-0.5 ${isDarkMode ? 'text-purple-400' : 'text-purple-600'}`}>Sejarah Pembelian</p>
               </div>
               <button onClick={() => {setShowAnalyticsModal(false); setConfirmClean(false);}} className={`p-1.5 rounded-full ${isDarkMode ? 'bg-slate-700 text-slate-400 hover:bg-slate-600' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}><X className="w-5 h-5"/></button>
             </div>
@@ -1088,7 +1088,7 @@ export default function App() {
                 <div className="text-center py-16">
                   <PieChart className={`w-12 h-12 mx-auto mb-3 opacity-20 ${isDarkMode ? 'text-white' : 'text-gray-800'}`} />
                   <p className={`text-sm font-medium ${isDarkMode ? 'text-slate-400' : 'text-gray-500'}`}>Belum ada data analitik.</p>
-                  <p className={`text-xs mt-2 ${isDarkMode ? 'text-slate-500' : 'text-gray-400'}`}>Tekan 'Simpan Resit' di tab selesai selepas shopping untuk mula menjana graf.</p>
+                  <p className={`text-xs mt-2 ${isDarkMode ? 'text-slate-500' : 'text-gray-400'}`}>Tekan 'Simpan Resit' di tab selesai selepas pembelian untuk mula menjana graf.</p>
                 </div>
               ) : (
                 <div className="space-y-6">
