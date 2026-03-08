@@ -9,7 +9,7 @@ import {
   initializeApp 
 } from 'firebase/app';
 import { 
-  getAuth, signInAnonymously, signInWithCustomToken, onAauthStateChanged 
+  getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged 
 } from 'firebase/auth';
 import { 
   getFirestore, doc, onSnapshot, setDoc, updateDoc, enableIndexedDbPersistence
@@ -42,10 +42,10 @@ try {
 const appId = typeof __app_id !== 'undefined' ? __app_id : 'jom-shopping-app';
 
 const KATEGORI_LALAI = [
-  'Barang Basah',
+  'Barang Basah (Ayam/Ikan)',
   'Sayur & Buah',
-  'Barangan Kering',
-  'Keperluan Rumah',
+  'Barangan Kering (Beras/Minyak)',
+  'Keperluan Rumah (Sabun/Tisu)',
   'Snek & Minuman',
   'Lain-lain'
 ];
@@ -492,6 +492,7 @@ export default function App() {
     );
   }
 
+  // Skrin Log Masuk
   if (!roomCode || !roomData) {
     return (
       <div className={`min-h-screen ${isDarkMode ? 'bg-slate-900' : 'bg-gradient-to-br from-teal-50 to-emerald-100'} flex flex-col items-center justify-center p-4 relative overflow-hidden transition-colors duration-300`} style={{ fontFamily: "'Poppins', sans-serif" }}>
@@ -795,150 +796,245 @@ export default function App() {
       </div>
 
       {showManageListModal && (
-        <div className={`fixed inset-0 backdrop-blur-sm z-[70] flex items-end sm:items-center justify-center p-4 ${isDarkMode ? 'bg-slate-900/80' : 'bg-slate-900/40'}`}>
-          <div className={`${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-transparent'} rounded-[2rem] w-full max-w-sm overflow-hidden p-6 animate-in slide-in-from-bottom-8 duration-300 shadow-2xl border`}>
-            <div className="flex justify-between items-center mb-5">
-              <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>Urus Senarai</h3>
-              <button onClick={() => setShowManageListModal(false)} className={`p-1.5 rounded-full ${isDarkMode ? 'bg-slate-700 text-slate-400 hover:bg-slate-600' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}><X className="w-5 h-5"/></button>
-            </div>
-            
-            <div className="space-y-3 mb-6 max-h-[40vh] overflow-y-auto pr-1 no-scrollbar">
-              {lists.map(l => (
-                <div key={l.id} className={`flex justify-between items-center p-3.5 rounded-xl border shadow-sm ${isDarkMode ? 'bg-slate-900/50 border-slate-700' : 'bg-gray-50 border-gray-200/50'}`}>
-                  <span className={`font-bold text-sm ${isDarkMode ? 'text-slate-200' : 'text-gray-700'}`}>{l.name}</span>
-                  {l.id !== 'default' ? (
-                    <button onClick={() => removeList(l.id)} className={`p-2 rounded-lg transition-colors ${isDarkMode ? 'text-rose-400 bg-rose-900/20 hover:bg-rose-900/40' : 'text-rose-500 bg-rose-50 hover:bg-rose-100'}`}>
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  ) : (
-                    <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded ${isDarkMode ? 'bg-slate-700 text-slate-400' : 'bg-gray-200 text-gray-500'}`}>Utama</span>
-                  )}
-                </div>
-              ))}
-            </div>
-
-            <form onSubmit={addNewList} className="flex gap-2">
-              <input autoFocus required value={newListInput} onChange={(e) => setNewListInput(e.target.value)} placeholder="Nama senarai baru..." className={`flex-1 border-2 rounded-xl p-3 text-sm font-medium focus:outline-none focus:ring-4 transition-all ${isDarkMode ? 'bg-slate-900 border-slate-700 text-white focus:border-teal-500 focus:ring-teal-500/20' : 'bg-white border-gray-200 text-gray-800 focus:border-teal-500 focus:ring-teal-500/10'}`} />
-              <button type="submit" className="bg-teal-600 hover:bg-teal-700 transition-colors text-white px-4 rounded-xl font-bold shadow-lg shadow-teal-600/30">
-                <Plus className="w-5 h-5" />
-              </button>
-            </form>
-          </div>
-        </div>
+        <ManageListModal 
+          lists={lists} 
+          newListInput={newListInput} 
+          setNewListInput={setNewListInput} 
+          addNewList={addNewList} 
+          removeList={removeList} 
+          setShowManageListModal={setShowManageListModal} 
+          isDarkMode={isDarkMode} 
+        />
       )}
 
       {showAnalyticsModal && (
-        <div className={`fixed inset-0 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-4 ${isDarkMode ? 'bg-slate-900/80' : 'bg-slate-900/40'}`}>
-          <div className={`${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-transparent'} rounded-[2rem] w-full max-w-md overflow-hidden flex flex-col max-h-[85vh] animate-in slide-in-from-bottom-8 duration-300 shadow-2xl border`}>
-            
-            <div className={`p-5 border-b flex justify-between items-center z-10 ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-gray-100'}`}>
-              <div>
-                <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>Analitik</h3>
-                <p className={`text-[11px] font-bold uppercase tracking-wider mt-0.5 ${isDarkMode ? 'text-purple-400' : 'text-purple-600'}`}>Sejarah Arkib Sesi Shopping</p>
-              </div>
-              <button onClick={() => {setShowAnalyticsModal(false); setConfirmClean(false);}} className={`p-1.5 rounded-full ${isDarkMode ? 'bg-slate-700 text-slate-400 hover:bg-slate-600' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}><X className="w-5 h-5"/></button>
-            </div>
-
-            <div className={`overflow-y-auto p-5 flex-1 ${isDarkMode ? 'bg-slate-900' : 'bg-gray-50'}`}>
-              {(!roomData?.pastSessions || roomData.pastSessions.length === 0) ? (
-                <div className="text-center py-16">
-                  <PieChart className={`w-12 h-12 mx-auto mb-3 opacity-20 ${isDarkMode ? 'text-white' : 'text-gray-800'}`} />
-                  <p className={`text-sm font-medium ${isDarkMode ? 'text-slate-400' : 'text-gray-500'}`}>Belum ada data analitik.</p>
-                  <p className={`text-xs mt-2 ${isDarkMode ? 'text-slate-500' : 'text-gray-400'}`}>Tekan 'Simpan Resit' di tab selesai selepas shopping untuk mula menjana graf.</p>
-                </div>
-              ) : (
-                <div className="space-y-6">
-                  <div className={`p-5 rounded-3xl text-center shadow-sm border ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-gray-100'}`}>
-                    <p className={`text-xs font-bold uppercase tracking-widest mb-1 ${isDarkMode ? 'text-slate-400' : 'text-gray-400'}`}>Jumlah Keseluruhan (Sepanjang Masa)</p>
-                    <h2 className={`text-3xl font-bold ${isDarkMode ? 'text-purple-400' : 'text-purple-600'}`}>
-                      <span className="text-lg mr-1 text-gray-400">RM</span>
-                      {analyticsData.totalAllTime.toFixed(2)}
-                    </h2>
-                  </div>
-
-                  <div>
-                    <h4 className={`text-xs font-bold uppercase tracking-widest mb-3 ${isDarkMode ? 'text-slate-400' : 'text-gray-500'}`}>Pecahan Mengikut Kategori</h4>
-                    <div className={`p-4 rounded-3xl shadow-sm border space-y-4 ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-gray-100'}`}>
-                      {analyticsData.sortedCategories.map((cat, index) => {
-                        const amount = analyticsData.categoryTotals[cat];
-                        const percentage = (amount / analyticsData.totalAllTime) * 100;
-                        const colors = ['bg-teal-500', 'bg-blue-500', 'bg-purple-500', 'bg-rose-500', 'bg-orange-500', 'bg-indigo-500'];
-                        const barColor = colors[index % colors.length];
-
-                        return (
-                          <div key={cat}>
-                            <div className="flex justify-between text-xs font-bold mb-1.5">
-                              <span className={isDarkMode ? 'text-slate-300' : 'text-gray-700'}>{cat}</span>
-                              <span className={isDarkMode ? 'text-slate-400' : 'text-gray-500'}>RM {amount.toFixed(2)}</span>
-                            </div>
-                            <div className={`h-2 w-full rounded-full overflow-hidden ${isDarkMode ? 'bg-slate-700' : 'bg-gray-100'}`}>
-                              <div className={`h-full ${barColor} rounded-full`} style={{ width: `${percentage}%` }}></div>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  <div>
-                    <h4 className={`text-xs font-bold uppercase tracking-widest mb-3 ${isDarkMode ? 'text-slate-400' : 'text-gray-500'}`}>Rekod Sesi Terdahulu</h4>
-                    <div className="space-y-3">
-                      {[...roomData.pastSessions].reverse().map(session => {
-                        const sessionDate = new Date(session.date);
-                        return (
-                          <div key={session.id} className={`p-4 rounded-2xl shadow-sm border flex justify-between items-center ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-gray-100'}`}>
-                            <div>
-                              <p className={`text-sm font-bold ${isDarkMode ? 'text-slate-300' : 'text-gray-800'}`}>
-                                {session.listName || 'Senarai Utama'}
-                              </p>
-                              <p className={`text-[10px] font-bold mt-0.5 ${isDarkMode ? 'text-slate-500' : 'text-gray-400'}`}>
-                                {sessionDate.toLocaleDateString('ms-MY', { day: 'numeric', month: 'short', year: 'numeric' })} • {sessionDate.toLocaleTimeString('ms-MY', { hour: '2-digit', minute: '2-digit' })}
-                              </p>
-                            </div>
-                            <p className={`font-bold ${isDarkMode ? 'text-emerald-400' : 'text-emerald-600'}`}>RM {session.totalSpent.toFixed(2)}</p>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  <div className={`pt-6 pb-2 border-t border-dashed ${isDarkMode ? 'border-slate-700' : 'border-gray-200'}`}>
-                    {!confirmClean ? (
-                      <button onClick={() => setConfirmClean(true)} className={`w-full py-3 rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-2 ${isDarkMode ? 'bg-rose-900/20 text-rose-400 hover:bg-rose-900/40' : 'bg-rose-50 text-rose-500 hover:bg-rose-100'}`}>
-                        <AlertTriangle className="w-4 h-4" /> Cuci Rekod Lama ({'>'} 6 Bulan)
-                      </button>
-                    ) : (
-                      <div className={`p-4 rounded-xl border ${isDarkMode ? 'bg-rose-900/10 border-rose-900/30' : 'bg-rose-50 border-rose-200'}`}>
-                        <p className={`text-xs font-bold text-center mb-3 ${isDarkMode ? 'text-rose-400' : 'text-rose-600'}`}>
-                          Adakah anda pasti? Rekod lama tidak boleh dikembalikan.
-                        </p>
-                        <div className="flex gap-2">
-                          <button onClick={() => setConfirmClean(false)} className={`flex-1 py-2 text-xs font-bold rounded-lg ${isDarkMode ? 'bg-slate-800 text-slate-300' : 'bg-white text-gray-600'}`}>Batal</button>
-                          <button onClick={cleanOldHistory} className="flex-1 py-2 text-xs font-bold rounded-lg bg-rose-500 text-white shadow-md shadow-rose-500/30">Ya, Sahkan</button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
+        <AnalyticsModal 
+          roomData={roomData} 
+          analyticsData={analyticsData} 
+          confirmClean={confirmClean} 
+          setConfirmClean={setConfirmClean} 
+          cleanOldHistory={cleanOldHistory} 
+          setShowAnalyticsModal={setShowAnalyticsModal} 
+          isDarkMode={isDarkMode} 
+        />
       )}
 
-      {showPriceModal(priceModalItem, confirmItemPrice, setPriceModalItem, priceInput, setPriceInput, qtyInput, setQtyInput, isDarkMode, handleNumberInput)}
-      {showCompareModalUI(showCompareModal, setShowCompareModal, compA, setCompA, compB, setCompB, calculateBestValue, isDarkMode, handleNumberInput)}
-      {showAddItemModal(showAddModal, setShowAddModal, addItem, newItemName, setNewItemName, newItemCategory, setNewItemCategory, KATEGORI_LALAI, isDarkMode)}
-      {showMasterListModal(showMasterModal, setShowMasterModal, searchMasterQuery, setSearchMasterQuery, filteredMasterList, roomData, currentListId, editingMasterId, setEditingMasterId, editMasterName, setEditMasterName, editMasterCategory, setEditMasterCategory, saveEditMaster, startEditMaster, addFromMaster, KATEGORI_LALAI, isDarkMode)}
-      {showSetBudgetModal(showBudgetModal, setShowBudgetModal, updateBudget, budgetInput, setBudgetInput, handleNumberInput, isDarkMode)}
+      {priceModalItem && (
+        <PriceModal 
+          priceModalItem={priceModalItem} 
+          confirmItemPrice={confirmItemPrice} 
+          setPriceModalItem={setPriceModalItem} 
+          priceInput={priceInput} 
+          setPriceInput={setPriceInput} 
+          qtyInput={qtyInput} 
+          setQtyInput={setQtyInput} 
+          isDarkMode={isDarkMode} 
+          handleNumberInput={handleNumberInput} 
+        />
+      )}
+      
+      {showCompareModal && (
+        <CompareModal 
+          setShowCompareModal={setShowCompareModal} 
+          compA={compA} 
+          setCompA={setCompA} 
+          compB={compB} 
+          setCompB={setCompB} 
+          calculateBestValue={calculateBestValue} 
+          isDarkMode={isDarkMode} 
+          handleNumberInput={handleNumberInput} 
+        />
+      )}
+      
+      {showAddModal && (
+        <AddItemModal 
+          setShowAddModal={setShowAddModal} 
+          addItem={addItem} 
+          newItemName={newItemName} 
+          setNewItemName={setNewItemName} 
+          newItemCategory={newItemCategory} 
+          setNewItemCategory={setNewItemCategory} 
+          KATEGORI_LALAI={KATEGORI_LALAI} 
+          isDarkMode={isDarkMode} 
+        />
+      )}
+      
+      {showMasterModal && (
+        <MasterListModal 
+          setShowMasterModal={setShowMasterModal} 
+          searchMasterQuery={searchMasterQuery} 
+          setSearchMasterQuery={setSearchMasterQuery} 
+          filteredMasterList={filteredMasterList} 
+          roomData={roomData} 
+          currentListId={currentListId} 
+          editingMasterId={editingMasterId} 
+          setEditingMasterId={setEditingMasterId} 
+          editMasterName={editMasterName} 
+          setEditMasterName={setEditMasterName} 
+          editMasterCategory={editMasterCategory} 
+          setEditMasterCategory={setEditMasterCategory} 
+          saveEditMaster={saveEditMaster} 
+          startEditMaster={startEditMaster} 
+          addFromMaster={addFromMaster} 
+          KATEGORI_LALAI={KATEGORI_LALAI} 
+          isDarkMode={isDarkMode} 
+        />
+      )}
+      
+      {showBudgetModal && (
+        <BudgetModal 
+          setShowBudgetModal={setShowBudgetModal} 
+          updateBudget={updateBudget} 
+          budgetInput={budgetInput} 
+          setBudgetInput={setBudgetInput} 
+          handleNumberInput={handleNumberInput} 
+          isDarkMode={isDarkMode} 
+        />
+      )}
 
     </div>
   );
 }
 
-// Komponen Modal Tambahan diletakkan di luar untuk kebersihan kod
-function showPriceModal(priceModalItem, confirmItemPrice, setPriceModalItem, priceInput, setPriceInput, qtyInput, setQtyInput, isDarkMode, handleNumberInput) {
-  if (!priceModalItem) return null;
+// --- KOMPONEN MODAL BERASINGAN ---
+
+function ManageListModal({ lists, newListInput, setNewListInput, addNewList, removeList, setShowManageListModal, isDarkMode }) {
+  return (
+    <div className={`fixed inset-0 backdrop-blur-sm z-[70] flex items-end sm:items-center justify-center p-4 ${isDarkMode ? 'bg-slate-900/80' : 'bg-slate-900/40'}`}>
+      <div className={`${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-transparent'} rounded-[2rem] w-full max-w-sm overflow-hidden p-6 animate-in slide-in-from-bottom-8 duration-300 shadow-2xl border`}>
+        <div className="flex justify-between items-center mb-5">
+          <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>Urus Senarai</h3>
+          <button onClick={() => setShowManageListModal(false)} className={`p-1.5 rounded-full ${isDarkMode ? 'bg-slate-700 text-slate-400 hover:bg-slate-600' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}><X className="w-5 h-5"/></button>
+        </div>
+        
+        <div className="space-y-3 mb-6 max-h-[40vh] overflow-y-auto pr-1 no-scrollbar">
+          {lists.map(l => (
+            <div key={l.id} className={`flex justify-between items-center p-3.5 rounded-xl border shadow-sm ${isDarkMode ? 'bg-slate-900/50 border-slate-700' : 'bg-gray-50 border-gray-200/50'}`}>
+              <span className={`font-bold text-sm ${isDarkMode ? 'text-slate-200' : 'text-gray-700'}`}>{l.name}</span>
+              {l.id !== 'default' ? (
+                <button onClick={() => removeList(l.id)} className={`p-2 rounded-lg transition-colors ${isDarkMode ? 'text-rose-400 bg-rose-900/20 hover:bg-rose-900/40' : 'text-rose-500 bg-rose-50 hover:bg-rose-100'}`}>
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              ) : (
+                <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded ${isDarkMode ? 'bg-slate-700 text-slate-400' : 'bg-gray-200 text-gray-500'}`}>Utama</span>
+              )}
+            </div>
+          ))}
+        </div>
+
+        <form onSubmit={addNewList} className="flex gap-2">
+          <input autoFocus required value={newListInput} onChange={(e) => setNewListInput(e.target.value)} placeholder="Nama senarai baru..." className={`flex-1 border-2 rounded-xl p-3 text-sm font-medium focus:outline-none focus:ring-4 transition-all ${isDarkMode ? 'bg-slate-900 border-slate-700 text-white focus:border-teal-500 focus:ring-teal-500/20' : 'bg-white border-gray-200 text-gray-800 focus:border-teal-500 focus:ring-teal-500/10'}`} />
+          <button type="submit" className="bg-teal-600 hover:bg-teal-700 transition-colors text-white px-4 rounded-xl font-bold shadow-lg shadow-teal-600/30">
+            <Plus className="w-5 h-5" />
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+function AnalyticsModal({ roomData, analyticsData, confirmClean, setConfirmClean, cleanOldHistory, setShowAnalyticsModal, isDarkMode }) {
+  return (
+    <div className={`fixed inset-0 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-4 ${isDarkMode ? 'bg-slate-900/80' : 'bg-slate-900/40'}`}>
+      <div className={`${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-transparent'} rounded-[2rem] w-full max-w-md overflow-hidden flex flex-col max-h-[85vh] animate-in slide-in-from-bottom-8 duration-300 shadow-2xl border`}>
+        
+        <div className={`p-5 border-b flex justify-between items-center z-10 ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-gray-100'}`}>
+          <div>
+            <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>Analitik</h3>
+            <p className={`text-[11px] font-bold uppercase tracking-wider mt-0.5 ${isDarkMode ? 'text-purple-400' : 'text-purple-600'}`}>Sejarah Pembelian</p>
+          </div>
+          <button onClick={() => {setShowAnalyticsModal(false); setConfirmClean(false);}} className={`p-1.5 rounded-full ${isDarkMode ? 'bg-slate-700 text-slate-400 hover:bg-slate-600' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}><X className="w-5 h-5"/></button>
+        </div>
+
+        <div className={`overflow-y-auto p-5 flex-1 ${isDarkMode ? 'bg-slate-900' : 'bg-gray-50'}`}>
+          {(!roomData?.pastSessions || roomData.pastSessions.length === 0) ? (
+            <div className="text-center py-16">
+              <PieChart className={`w-12 h-12 mx-auto mb-3 opacity-20 ${isDarkMode ? 'text-white' : 'text-gray-800'}`} />
+              <p className={`text-sm font-medium ${isDarkMode ? 'text-slate-400' : 'text-gray-500'}`}>Belum ada data analitik.</p>
+              <p className={`text-xs mt-2 ${isDarkMode ? 'text-slate-500' : 'text-gray-400'}`}>Tekan 'Simpan Resit' di tab selesai selepas pembelian untuk mula menjana graf.</p>
+            </div>
+          ) : (
+            <div className="space-y-6">
+              <div className={`p-5 rounded-3xl text-center shadow-sm border ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-gray-100'}`}>
+                <p className={`text-xs font-bold uppercase tracking-widest mb-1 ${isDarkMode ? 'text-slate-400' : 'text-gray-400'}`}>Jumlah Keseluruhan (Sepanjang Masa)</p>
+                <h2 className={`text-3xl font-bold ${isDarkMode ? 'text-purple-400' : 'text-purple-600'}`}>
+                  <span className="text-lg mr-1 text-gray-400">RM</span>
+                  {analyticsData.totalAllTime.toFixed(2)}
+                </h2>
+              </div>
+
+              <div>
+                <h4 className={`text-xs font-bold uppercase tracking-widest mb-3 ${isDarkMode ? 'text-slate-400' : 'text-gray-500'}`}>Pecahan Mengikut Kategori</h4>
+                <div className={`p-4 rounded-3xl shadow-sm border space-y-4 ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-gray-100'}`}>
+                  {analyticsData.sortedCategories.map((cat, index) => {
+                    const amount = analyticsData.categoryTotals[cat];
+                    const percentage = (amount / analyticsData.totalAllTime) * 100;
+                    const colors = ['bg-teal-500', 'bg-blue-500', 'bg-purple-500', 'bg-rose-500', 'bg-orange-500', 'bg-indigo-500'];
+                    const barColor = colors[index % colors.length];
+
+                    return (
+                      <div key={cat}>
+                        <div className="flex justify-between text-xs font-bold mb-1.5">
+                          <span className={isDarkMode ? 'text-slate-300' : 'text-gray-700'}>{cat}</span>
+                          <span className={isDarkMode ? 'text-slate-400' : 'text-gray-500'}>RM {amount.toFixed(2)}</span>
+                        </div>
+                        <div className={`h-2 w-full rounded-full overflow-hidden ${isDarkMode ? 'bg-slate-700' : 'bg-gray-100'}`}>
+                          <div className={`h-full ${barColor} rounded-full`} style={{ width: `${percentage}%` }}></div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div>
+                <h4 className={`text-xs font-bold uppercase tracking-widest mb-3 ${isDarkMode ? 'text-slate-400' : 'text-gray-500'}`}>Rekod Sesi Terdahulu</h4>
+                <div className="space-y-3">
+                  {[...roomData.pastSessions].reverse().map(session => {
+                    const sessionDate = new Date(session.date);
+                    return (
+                      <div key={session.id} className={`p-4 rounded-2xl shadow-sm border flex justify-between items-center ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-gray-100'}`}>
+                        <div>
+                          <p className={`text-sm font-bold ${isDarkMode ? 'text-slate-300' : 'text-gray-800'}`}>
+                            {session.listName || 'Senarai Utama'}
+                          </p>
+                          <p className={`text-[10px] font-bold mt-0.5 ${isDarkMode ? 'text-slate-500' : 'text-gray-400'}`}>
+                            {sessionDate.toLocaleDateString('ms-MY', { day: 'numeric', month: 'short', year: 'numeric' })} • {sessionDate.toLocaleTimeString('ms-MY', { hour: '2-digit', minute: '2-digit' })}
+                          </p>
+                        </div>
+                        <p className={`font-bold ${isDarkMode ? 'text-emerald-400' : 'text-emerald-600'}`}>RM {session.totalSpent.toFixed(2)}</p>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className={`pt-6 pb-2 border-t border-dashed ${isDarkMode ? 'border-slate-700' : 'border-gray-200'}`}>
+                {!confirmClean ? (
+                  <button onClick={() => setConfirmClean(true)} className={`w-full py-3 rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-2 ${isDarkMode ? 'bg-rose-900/20 text-rose-400 hover:bg-rose-900/40' : 'bg-rose-50 text-rose-500 hover:bg-rose-100'}`}>
+                    <AlertTriangle className="w-4 h-4" /> Cuci Rekod Lama ({'>'} 6 Bulan)
+                  </button>
+                ) : (
+                  <div className={`p-4 rounded-xl border ${isDarkMode ? 'bg-rose-900/10 border-rose-900/30' : 'bg-rose-50 border-rose-200'}`}>
+                    <p className={`text-xs font-bold text-center mb-3 ${isDarkMode ? 'text-rose-400' : 'text-rose-600'}`}>
+                      Adakah anda pasti? Rekod lama tidak boleh dikembalikan.
+                    </p>
+                    <div className="flex gap-2">
+                      <button onClick={() => setConfirmClean(false)} className={`flex-1 py-2 text-xs font-bold rounded-lg ${isDarkMode ? 'bg-slate-800 text-slate-300' : 'bg-white text-gray-600'}`}>Batal</button>
+                      <button onClick={cleanOldHistory} className="flex-1 py-2 text-xs font-bold rounded-lg bg-rose-500 text-white shadow-md shadow-rose-500/30">Ya, Sahkan</button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PriceModal({ priceModalItem, confirmItemPrice, setPriceModalItem, priceInput, setPriceInput, qtyInput, setQtyInput, isDarkMode, handleNumberInput }) {
   return (
     <div className={`fixed inset-0 backdrop-blur-sm z-[60] flex items-center justify-center p-4 ${isDarkMode ? 'bg-slate-900/80' : 'bg-slate-900/60'}`}>
       <div className={`${isDarkMode ? 'bg-slate-800' : 'bg-white'} rounded-[2rem] w-full max-w-xs overflow-hidden p-6 animate-in zoom-in-95 duration-200 shadow-2xl border ${isDarkMode ? 'border-slate-700' : 'border-transparent'}`}>
@@ -991,8 +1087,7 @@ function showPriceModal(priceModalItem, confirmItemPrice, setPriceModalItem, pri
   );
 }
 
-function showCompareModalUI(showCompareModal, setShowCompareModal, compA, setCompA, compB, setCompB, calculateBestValue, isDarkMode, handleNumberInput) {
-  if (!showCompareModal) return null;
+function CompareModal({ setShowCompareModal, compA, setCompA, compB, setCompB, calculateBestValue, isDarkMode, handleNumberInput }) {
   return (
     <div className={`fixed inset-0 backdrop-blur-sm z-50 flex items-center justify-center p-4 ${isDarkMode ? 'bg-slate-900/80' : 'bg-slate-900/60'}`}>
       <div className={`${isDarkMode ? 'bg-slate-800' : 'bg-white'} rounded-[2rem] w-full max-w-sm overflow-hidden p-5 animate-in slide-in-from-bottom-8 duration-300 shadow-2xl border ${isDarkMode ? 'border-slate-700' : 'border-transparent'}`}>
@@ -1020,7 +1115,7 @@ function showCompareModalUI(showCompareModal, setShowCompareModal, compA, setCom
           </div>
           <div className="relative h-4 flex items-center justify-center">
             <div className={`absolute w-full h-px ${isDarkMode ? 'bg-slate-700' : 'bg-gray-200'}`}></div>
-            <span className={`relative px-2 text-[10px] font-bold uppercase tracking-widest ${isDarkMode ? 'bg-slate-800 text-slate-500' : 'bg-white text-gray-400'}`}>Lawan</span>
+            <span className={`relative px-2 text-[10px] font-bold uppercase tracking-widest ${isDarkMode ? 'bg-slate-800 text-slate-500' : 'bg-white text-gray-400'}`}>Berbanding</span>
           </div>
           <div className={`p-3 rounded-2xl border ${isDarkMode ? 'bg-slate-900/50 border-slate-700' : 'bg-gray-50 border-gray-200/60'}`}>
             <p className={`text-xs font-bold mb-2 ${isDarkMode ? 'text-slate-300' : 'text-gray-700'}`}>Barang B</p>
@@ -1054,7 +1149,7 @@ function showCompareModalUI(showCompareModal, setShowCompareModal, compA, setCom
   );
 }
 
-function showAddItemModal(showAddModal, setShowAddModal, addItem, newItemName, setNewItemName, newItemCategory, setNewItemCategory, KATEGORI_LALAI, isDarkMode) {
+function AddItemModal({ showAddModal, setShowAddModal, addItem, newItemName, setNewItemName, newItemCategory, setNewItemCategory, KATEGORI_LALAI, isDarkMode }) {
   if (!showAddModal) return null;
   return (
     <div className={`fixed inset-0 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-4 ${isDarkMode ? 'bg-slate-900/80' : 'bg-slate-900/40'}`}>
@@ -1083,7 +1178,7 @@ function showAddItemModal(showAddModal, setShowAddModal, addItem, newItemName, s
   );
 }
 
-function showMasterListModal(showMasterModal, setShowMasterModal, searchMasterQuery, setSearchMasterQuery, filteredMasterList, roomData, currentListId, editingMasterId, setEditingMasterId, editMasterName, setEditMasterName, editMasterCategory, setEditMasterCategory, saveEditMaster, startEditMaster, addFromMaster, KATEGORI_LALAI, isDarkMode) {
+function MasterListModal({ showMasterModal, setShowMasterModal, searchMasterQuery, setSearchMasterQuery, filteredMasterList, roomData, currentListId, editingMasterId, setEditingMasterId, editMasterName, setEditMasterName, editMasterCategory, setEditMasterCategory, saveEditMaster, startEditMaster, addFromMaster, KATEGORI_LALAI, isDarkMode }) {
   if (!showMasterModal) return null;
   return (
     <div className={`fixed inset-0 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-4 ${isDarkMode ? 'bg-slate-900/80' : 'bg-slate-900/40'}`}>
@@ -1151,7 +1246,7 @@ function showMasterListModal(showMasterModal, setShowMasterModal, searchMasterQu
   );
 }
 
-function showSetBudgetModal(showBudgetModal, setShowBudgetModal, updateBudget, budgetInput, setBudgetInput, handleNumberInput, isDarkMode) {
+function BudgetModal({ showBudgetModal, setShowBudgetModal, updateBudget, budgetInput, setBudgetInput, handleNumberInput, isDarkMode }) {
   if (!showBudgetModal) return null;
   return (
     <div className={`fixed inset-0 backdrop-blur-sm z-50 flex items-center justify-center p-4 ${isDarkMode ? 'bg-slate-900/80' : 'bg-slate-900/40'}`}>
