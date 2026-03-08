@@ -686,7 +686,7 @@ export default function App() {
               {activeTab === 'pending' ? 'Senarai Kosong' : 'Belum Ada Belian'}
             </h3>
             <p className={`text-sm font-medium ${isDarkMode ? 'text-slate-400' : 'text-gray-400'}`}>
-              {activeTab === 'pending' ? `Mula tambah barang untuk senarai ini.` : 'Barang yang dibeli akan muncul di sini.'}
+              {activeTab === 'pending' ? `Mula tambah barang untuk senarai ini.` : 'Barang yang ditick akan muncul di sini.'}
             </p>
           </div>
         ) : (
@@ -941,7 +941,7 @@ function AnalyticsModal({ roomData, analyticsData, confirmClean, setConfirmClean
         <div className={`p-5 border-b flex justify-between items-center z-10 ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-gray-100'}`}>
           <div>
             <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>Analitik</h3>
-            <p className={`text-[11px] font-bold uppercase tracking-wider mt-0.5 ${isDarkMode ? 'text-purple-400' : 'text-purple-600'}`}>Sejarah Pembelian</p>
+            <p className={`text-[11px] font-bold uppercase tracking-wider mt-0.5 ${isDarkMode ? 'text-purple-400' : 'text-purple-600'}`}>Sejarah Arkib Sesi Shopping</p>
           </div>
           <button onClick={() => {setShowAnalyticsModal(false); setConfirmClean(false);}} className={`p-1.5 rounded-full ${isDarkMode ? 'bg-slate-700 text-slate-400 hover:bg-slate-600' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}><X className="w-5 h-5"/></button>
         </div>
@@ -951,7 +951,7 @@ function AnalyticsModal({ roomData, analyticsData, confirmClean, setConfirmClean
             <div className="text-center py-16">
               <PieChart className={`w-12 h-12 mx-auto mb-3 opacity-20 ${isDarkMode ? 'text-white' : 'text-gray-800'}`} />
               <p className={`text-sm font-medium ${isDarkMode ? 'text-slate-400' : 'text-gray-500'}`}>Belum ada data analitik.</p>
-              <p className={`text-xs mt-2 ${isDarkMode ? 'text-slate-500' : 'text-gray-400'}`}>Tekan 'Simpan Resit' di tab selesai selepas pembelian untuk mula menjana graf.</p>
+              <p className={`text-xs mt-2 ${isDarkMode ? 'text-slate-500' : 'text-gray-400'}`}>Tekan 'Simpan Resit' di tab selesai selepas shopping untuk mula menjana graf.</p>
             </div>
           ) : (
             <div className="space-y-6">
@@ -1098,6 +1098,8 @@ function CompareModal({ setShowCompareModal, compA, setCompA, compB, setCompB, c
           </div>
           <button onClick={() => setShowCompareModal(false)} className={`p-1.5 rounded-full ${isDarkMode ? 'bg-slate-700 text-slate-400 hover:bg-slate-600' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}><X className="w-4 h-4"/></button>
         </div>
+        <p className={`text-[11px] font-medium mb-4 leading-relaxed ${isDarkMode ? 'text-slate-400' : 'text-gray-500'}`}>Kira mana yang lebih berbaloi. Contoh: Sabun 1L harga RM10 vs Sabun 800ml harga RM8.50.</p>
+        <div className="space-y-4">
           <div className={`p-3 rounded-2xl border ${isDarkMode ? 'bg-slate-900/50 border-slate-700' : 'bg-gray-50 border-gray-200/60'}`}>
             <p className={`text-xs font-bold mb-2 ${isDarkMode ? 'text-slate-300' : 'text-gray-700'}`}>Barang A</p>
             <div className="flex gap-2">
@@ -1115,7 +1117,7 @@ function CompareModal({ setShowCompareModal, compA, setCompA, compB, setCompB, c
           </div>
           <div className="relative h-4 flex items-center justify-center">
             <div className={`absolute w-full h-px ${isDarkMode ? 'bg-slate-700' : 'bg-gray-200'}`}></div>
-            <span className={`relative px-2 text-[10px] font-bold uppercase tracking-widest ${isDarkMode ? 'bg-slate-800 text-slate-500' : 'bg-white text-gray-400'}`}>Berbanding</span>
+            <span className={`relative px-2 text-[10px] font-bold uppercase tracking-widest ${isDarkMode ? 'bg-slate-800 text-slate-500' : 'bg-white text-gray-400'}`}>Lawan</span>
           </div>
           <div className={`p-3 rounded-2xl border ${isDarkMode ? 'bg-slate-900/50 border-slate-700' : 'bg-gray-50 border-gray-200/60'}`}>
             <p className={`text-xs font-bold mb-2 ${isDarkMode ? 'text-slate-300' : 'text-gray-700'}`}>Barang B</p>
